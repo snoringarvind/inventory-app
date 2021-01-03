@@ -1,0 +1,9 @@
+extends layout
+block content
+  h1 #[strong #{title}]
+  h3 #[strong Item Name:] #{item.itemName}
+  p #[strong Item Description] #{item.itemDescription}
+  form(action='' method='POST')
+    p.form-group
+      input.form-control(type='hidden' name='itemid' value=item._id)
+    button.btn.btn-primary(type='submit') Delete Item

@@ -1,0 +1,17 @@
+extends layout
+block content
+  h1 #[strong #{title}]
+  h3 #[strong Category Name:] #{category.categoryName}
+  if category.item.length>0
+    p #[strong Deleting this category will delete all the items inside it.]
+    p Items which will be deleted are as follows:-
+    ul
+      for item in category.item
+        li #{item.itemName}
+  else
+    p There are no items in this category.
+
+  form(action='' method='POST')
+    div.form-group
+      input.form-control(type="hidden" name='categoryid' value=category._id)
+    button.btn.btn-primary(type='submit') Delete Category

@@ -1,0 +1,11 @@
+extends layout
+block content
+  h3.heading #[strong #{title}]
+  dl
+    for category in categories
+      dt 
+        a(href=category.url) #{category.categoryName}
+      dd
+        img(src=category.categoryImage) 
+      //- dd #{category.categoryDescription}
+      hr

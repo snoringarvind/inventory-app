@@ -1,0 +1,26 @@
+extends layout
+block content
+  h3.heading #{title}
+  form(action="" method='POST')
+    p.form-group
+      label(for="category") #[strong Category:]
+      select#category.form-control(name='category' type='select')
+        for category in categories
+          option(value=category._id selected=category.selected) #{category.categoryName}
+    p.form-group 
+      label(for="itemName") #[strong Item Name:]
+      input#itemName.form-control(type="text" name='itemName' value=(item==undefined ? '' : item.itemName))
+    p.form-group
+      label(for="itemDescription") #[strong Item Description:]
+      textarea#itemDescription.form-control(name='itemDescription') #{item==undefined ? '' : item.itemDescription}
+    p.form-group
+      label(for="itemPrice") #[strong Item Price:]
+      input#itemPrice.form-control(type='text' name='itemPrice' value=(item==undefined ? '' : item.itemPrice))
+    p.form-group
+      label(for="itemStock") #[strong Item Stock:]
+      input#itemStock.form-control(type='text' name='itemStock' value=(item==undefined ? '' : item.itemStock))
+    button.btn.btn-primary(type='submit') Create
+  if errors
+    ul
+      for error in errors
+        li!=error.msg      

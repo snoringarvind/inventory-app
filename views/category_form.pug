@@ -1,0 +1,17 @@
+extends layout
+block content
+  h3.heading #[strong #{title}]
+  form(action='' method='POST') 
+    p.form-group
+      label(for='categoryName') #[strong Category Name:]
+      input#categoryName.form-control(type='text' name='categoryName' value=(category==undefined ? '' : category.categoryName))
+    p.form-group
+      label(for='categoryDescription') #[strong Category Description:]
+      textarea#categoryDescription.form-control(name='categoryDescription') #{category==undefined ? '' : category.categoryDescription}
+    hr
+    button.btn.btn-primary(type='submit') Submit
+  if errors 
+    ul
+      for error in errors
+        li!=error.msg
+

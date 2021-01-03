@@ -1,0 +1,21 @@
+extends layout
+block content
+  h3.heading #[strong Category Name:]  #{category.categoryName}
+  p #[strong Category Description:] #{category.categoryDescription}
+  p
+    a(href=category.url+'/update')   
+      button.btn.btn-primary(type='button') Update Category
+  p
+    a(href=category.url + '/delete')
+      button.btn.btn-primary(type='button') Delete Category
+  h3 #[strong Items:]
+  dl
+    for item in category.item
+      dt 
+        a(href=item.url) #{item.itemName}
+      dd 
+        img(src=item.itemImage, alt="")
+      //- dd #{item.itemDescription}
+      hr 
+    else
+      p NO ITEMS YET!!

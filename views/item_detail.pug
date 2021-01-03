@@ -1,0 +1,13 @@
+extends layout
+block content
+  h3.heading #{item.itemName}
+  p #[strong Item Description:] #{item.itemDescription}
+  p #[strong Item Price:] #{item.itemPrice}
+  p #[strong Item Stock:] #{item.itemStock}
+  img(src=item.itemImage)
+  p
+    a(href=item.url+'/update')
+      button.btn.btn-primary(type='button') Update Item
+  p
+    a(href=item.url+'/delete')
+      button.btn.btn-primary(type='button') Delete Item

@@ -1,0 +1,22 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00b7ff;
+  text-decoration: none;
+}
+
+textarea {
+  height: 25vh;
+}
+
+.heading {
+  text-decoration: underline;
+  margin-bottom: 5vh;
+}
+
+button {
+  margin-bottom: 3vh;
+}
