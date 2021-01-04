@@ -4,20 +4,23 @@ block content
   p #[strong Category Description:] #{category.categoryDescription}
   
   if category.categoryImage.data!=undefined
-    img(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
-  p
+    p  
+      img.category-detail(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
+  span
     a(href=category.url+'/update')   
       button.btn.btn-primary(type='button') Update Category
-  p
+  span(style='display:inline-block')
     a(href=category.url + '/delete')
       button.btn.btn-primary(type='button') Delete Category
   h3 #[strong Items:]
-  dl
+  ol
     for item in category.item
-      dt 
-        a(href=item.url) #{item.itemName}
-      dd 
-        img(src=item.itemImage, alt="")
+      li
+        h4 
+          a(href=item.url) #[strong #{item.itemName}]
+            if item.itemImage.data!=undefined
+              p
+                img.category-detail-item-list(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64')) 
       //- dd #{item.itemDescription}
       hr 
     else

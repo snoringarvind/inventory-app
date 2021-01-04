@@ -59,13 +59,34 @@ exports.item_create_post = [
     const errors = validationResult(req);
 
     let data;
-    // console.log("item create post=", req.file);
-    try {
-      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
-      // console.log("item create post=", data);
-    } catch (err) {
-      // console.log(data);
-      return next(err);
+    let contentType;
+    let itemImage;
+    //using if and else cause maybe if you don't wish to update the image
+    if (req.file != undefined) {
+      try {
+        data = await fs.readFileSync(
+          path.join(__dirname, "../") + req.file.path
+        );
+        itemImage = { data: data, contentType: "image/jpg" };
+      } catch (err) {
+        // console.log(err);
+        return next(err);
+      }
+    } else {
+      try {
+        data = await Item.findById(req.params.id, "itemImage");
+        // console.log(data);
+        // console.log("data update item post = ", data.itemImage.data);
+        //*usinf if-else in case the image was not there in the first place
+        if (data == undefined || data == false) {
+          itemImage = false;
+        } else {
+          itemImage = { data: data.itemImage.data, contentType: "image/jpg" };
+        }
+      } catch (err) {
+        // console.log(err);
+        return next(err);
+      }
     }
 
     const item = new Item({
@@ -75,6 +96,13 @@ exports.item_create_post = [
       itemStock: req.body.itemStock,
       itemImage: { data: data, contentType: "image/jpg" },
     });
+
+    //unlink(delete) the file from computer since it has been uploaded to database
+    try {
+      await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
+    } catch (err) {
+      console.log("file is not deleted from computer", err);
+    }
 
     let categories;
     try {
@@ -128,6 +156,7 @@ exports.item_create_post = [
     } catch (err) {
       return next(err);
     }
+
     try {
       const saveItem = await item.save();
       // console.log("saveitem=", saveItem);
@@ -237,6 +266,13 @@ exports.item_update_post = [
       itemImage: itemImage,
       _id: req.params.id,
     });
+
+    //unlink(delete) the file from computer since it has been uploaded to database
+    try {
+      await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
+    } catch (err) {
+      console.log("file is not deleted from computer", err);
+    }
 
     let categories;
     try {

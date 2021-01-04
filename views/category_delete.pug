@@ -3,7 +3,7 @@ block content
   h1 #[strong #{title}]
   h3 #[strong Category Name:] #{category.categoryName}
   if category.categoryImage.data!=undefined
-    img(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
+    img.category-delete(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
   if category.item.length>0
     p #[strong Deleting this category will delete all the items inside it.]
     p Items which will be deleted are as follows:-

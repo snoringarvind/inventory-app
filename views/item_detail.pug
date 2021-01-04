@@ -5,10 +5,11 @@ block content
   p #[strong Item Price:] #{item.itemPrice}
   p #[strong Item Stock:] #{item.itemStock}
   if item.itemImage.data!=undefined
-    img(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64'))
-  p
+    p
+      img.item-detail(src='data:image/jpg;base64,' + item.itemImage.data.toString('base64'))
+  span
     a(href=item.url+'/update')
       button.btn.btn-primary(type='button') Update Item
-  p
+  span
     a(href=item.url+'/delete')
       button.btn.btn-primary(type='button') Delete Item

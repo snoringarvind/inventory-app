@@ -12,7 +12,7 @@ block content
       input#itemName.form-control(type="text" name='itemName' value=(item==undefined ? '' : item.itemName))
     if item!=undefined
       if item.itemImage.data!=undefined
-        img(src=('data:image/jpg;base64,'+item.itemImage.data.toString('base64')))
+        img.item-form(src=('data:image/jpg;base64,'+item.itemImage.data.toString('base64')))
     p.form-group
       label(for="itemImage") #[strong Item Image:]
       input#itemImage.form-control(type='file' name='itemImage')
@@ -25,7 +25,7 @@ block content
     p.form-group
       label(for="itemStock") #[strong Item Stock:]
       input#itemStock.form-control(type='text' name='itemStock' value=(item==undefined ? '' : item.itemStock))
-    button.btn.btn-primary(type='submit') Create
+    button.btn.btn-primary(type='submit') Submit
   if errors
     ul
       for error in errors

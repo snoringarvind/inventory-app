@@ -1,10 +1,10 @@
 extends layout
 block content
   h3.heading #{title}
-  dl
-    for item in items
-      dt
-        a(href=item.url) #{item.itemName}    
-      //- dd 
-      //-   img(src=item.itemImage, alt="")
-      hr  
+  for item in items
+    p
+      a(href=item.url) #{item.itemName}     
+        if item.itemImage.data!=undefined
+          p
+            img.item-list(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64'))
+    hr  

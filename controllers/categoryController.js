@@ -63,7 +63,8 @@ exports.category_detail = async (req, res, next) => {
 };
 
 exports.category_create_get = (req, res, next) => {
-  res.render("category_form", { title: "Create Category" });
+  // so add item button is not visible whilr creating categories
+  res.render("category_form", { title: "Create Category", add_item: false });
   return;
 };
 
@@ -83,25 +84,59 @@ exports.category_create_post = [
     // console.log("file=", req.file);
     // console.log("path=", path.join(__dirname, "../"));
     let data;
-    try {
-      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
-      // console.log("data=", data);
-    } catch (err) {
-      console.log(err);
-      return next(err);
+    let contentType;
+    let categoryImage;
+    // console.log("update file", req.file);
+    if (req.file != undefined) {
+      try {
+        data = await fs.readFileSync(
+          path.join(__dirname, "../") + req.file.path
+        );
+        categoryImage = { data: data, contentType: "image/jpg" };
+        // console.log("update data=", data);
+      } catch (err) {
+        console.log("error=", err);
+        return next(err);
+      }
+    } else {
+      try {
+        data = await Category.findById(req.params.id, "categoryImage");
+        if (data == undefined || data == false) {
+          categoryImage = false;
+        } else {
+          categoryImage = {
+            data: data.categoryImage.data,
+            contentType: "image/jpg",
+          };
+        }
+      } catch (err) {
+        console.log("error=", err);
+        return next(err);
+      }
     }
 
     const category = new Category({
       categoryName: req.body.categoryName,
       categoryDescription: req.body.categoryDescription,
-      categoryImage: { data: data, contentType: "image/jpg" },
+      categoryImage: categoryImage,
     });
 
+    //unlink(delete) the file from computer since it has been uploaded to database
+    if (req.file != undefined) {
+      try {
+        await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
+      } catch (err) {
+        console.log("file is not deleted from computer", err);
+      }
+    }
+
     if (!errors.isEmpty()) {
+      // errors.push({ msg: "category already exists" });
+      // console.log(errors);
       res.render("category_form", {
         title: "Category Create",
         category: category,
-        errors: errors.array(),
+        errors: errors,
       });
       return;
     } else {
@@ -109,7 +144,7 @@ exports.category_create_post = [
         (err, result) => {
           if (err) return next(err);
           if (result) {
-            // console.log("already exits");
+            console.log("category with this name already exits");
             res.redirect(result.url);
             return;
           } else {
@@ -203,6 +238,13 @@ exports.category_update_post = [
       item: items.item,
       _id: req.params.id,
     });
+
+    //unlink(delete) the file from computer since it has been uploaded to database
+    try {
+      await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
+    } catch (err) {
+      console.log("file is not deleted from computer", err);
+    }
 
     // console.log("category=", category);
     if (!errors.isEmpty()) {

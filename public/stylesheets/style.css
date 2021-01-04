@@ -20,3 +20,25 @@ textarea {
 button {
   margin-bottom: 3vh;
 }
+
+.category-list,
+.category-detail-item-list {
+  max-width: 70vh;
+  height: auto;
+}
+
+.category-delete,
+.category-form,
+.item-delete,
+.item-form {
+  max-width: 60vh;
+  height: auto;
+}
+
+ol {
+  font-size: x-large;
+}
+
+span {
+  margin: 10px 20px 40px 0px;
+}

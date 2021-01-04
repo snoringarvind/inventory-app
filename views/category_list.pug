@@ -3,9 +3,10 @@ block content
   h3.heading #[strong #{title}]
   dl
     for category in categories
-      dt 
-        a(href=category.url) #{category.categoryName}
-      if category.categoryImage.data!=undefined
-        img(src='data:image/jpg;base64,' + category.categoryImage.data.toString('base64')) 
+      h2
+        a(href=category.url) #[strong #{category.categoryName}]
+          if category.categoryImage.data!=undefined
+            p
+              img.category-list(src='data:image/jpg;base64,' + category.categoryImage.data.toString('base64')) 
       //- dd #{category.categoryDescription}
       hr

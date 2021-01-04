@@ -3,6 +3,8 @@ block content
   h1 #[strong #{title}]
   h3 #[strong Item Name:] #{item.itemName}
   p #[strong Item Description] #{item.itemDescription}
+  if item.itemImage.data!=undefined
+    img.item-delete(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64'))
   form(action='' method='POST')
     p.form-group
       input.form-control(type='hidden' name='itemid' value=item._id)
