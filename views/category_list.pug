@@ -5,7 +5,7 @@ block content
     for category in categories
       dt 
         a(href=category.url) #{category.categoryName}
-      dd
-        img(src=category.categoryImage) 
+      if category.categoryImage.data!=undefined
+        img(src='data:image/jpg;base64,' + category.categoryImage.data.toString('base64')) 
       //- dd #{category.categoryDescription}
       hr

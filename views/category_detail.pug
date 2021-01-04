@@ -2,6 +2,9 @@ extends layout
 block content
   h3.heading #[strong Category Name:]  #{category.categoryName}
   p #[strong Category Description:] #{category.categoryDescription}
+  
+  if category.categoryImage.data!=undefined
+    img(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
   p
     a(href=category.url+'/update')   
       button.btn.btn-primary(type='button') Update Category

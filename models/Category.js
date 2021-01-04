@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const CategorySchema = Schema({
   categoryName: { type: String, required: true },
   categoryDescription: { type: String, required: true },
-  categoryImage: { type: Buffer },
+  categoryImage: { data: Buffer, contentType: String },
   item: [{ type: Schema.Types.ObjectId, ref: "Item", required: true }],
 });
 

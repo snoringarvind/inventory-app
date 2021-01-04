@@ -2,6 +2,8 @@ const async = require("async");
 const { body, validationResult } = require("express-validator");
 const Category = require("../models/Category");
 const Item = require("../models/Item");
+const fs = require("fs");
+const path = require("path");
 
 exports.index = (req, res, next) => {
   async.parallel(
@@ -48,7 +50,7 @@ exports.category_detail = async (req, res, next) => {
     .exec((err, result) => {
       if (err) return next(err);
       else {
-        console.log(result);
+        // console.log(result);
         res.render("category_detail", {
           title: "category_detail",
           category: result,
@@ -70,13 +72,25 @@ exports.category_create_post = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
+  body("categoryImage").escape(),
 
-  (req, res, next) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
+    console.log("file=", req.file);
+    console.log("path=", path.join(__dirname, "../"));
+    let data;
+    try {
+      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
+      console.log("data=", data);
+    } catch (err) {
+      console.log(err);
+      return next(err);
+    }
 
     const category = new Category({
       categoryName: req.body.categoryName,
       categoryDescription: req.body.categoryDescription,
+      categoryImage: { data: data, contentType: "image/jpg" },
     });
 
     if (!errors.isEmpty()) {
@@ -91,11 +105,11 @@ exports.category_create_post = [
         (err, result) => {
           if (err) return next(err);
           if (result) {
+            console.log("already exits");
             res.redirect(result.url);
             return;
           } else {
             // console.log(category);
-
             category.save((err) => {
               if (err) {
                 console.log("in category get");
@@ -132,27 +146,32 @@ exports.category_update_post = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
+  body("categoryImage").escape(),
   async (req, res, next) => {
     const errors = validationResult(req);
     let items;
-    // Category.findById(req.params.id, "item").exec((err, result) => {
-    //   if (err) return next(err);
-    //   else {
-    //     console.log("result=", result);
-    //     console.log("result=", result.item);
-    //     items = result.item;
-    //     console.log(items);
-    //   }
-    // });
+
     try {
       items = await Category.findById(req.params.id, "item");
     } catch (err) {
       if (err) return next(err);
     }
+
+    let data;
+    console.log("update file", req.file);
+    try {
+      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
+      console.log("update data=", data);
+    } catch (err) {
+      console.log(err);
+      return next(err);
+    }
+
     // console.log(items.item);
     const category = new Category({
       categoryName: req.body.categoryName,
       categoryDescription: req.body.categoryDescription,
+      categoryImage: { data: data, contentType: "image/jpg" },
       item: items.item,
       _id: req.params.id,
     });
@@ -166,30 +185,31 @@ exports.category_update_post = [
       });
       return;
     } else {
-      Category.findOne({
-        categoryName: category.categoryName,
-      }).exec((err, result) => {
-        if (err) return next(err);
-        if (result) {
-          // console.log("alreay=", result);
-          res.redirect(category.url);
-          return;
-        } else {
-          // console.log("hahahhahhahahahha");
-          Category.findByIdAndUpdate(
-            req.params.id,
-            category,
-            {},
-            (err, thecategory) => {
-              if (err) return next(err);
-              else {
-                res.redirect(thecategory.url);
-              }
-            }
-          );
+      // Category.findOne({
+      //   categoryName: category.categoryName,
+      // }).exec((err, result) => {
+      //   if (err) return next(err);
+      //   if (result) {
+      //     console.log("already exits");
+      //     // console.log("alreay=", result);
+      //     res.redirect(category.url);
+      //     return;
+      //   } else {
+      // console.log("hahahhahhahahahha");
+      Category.findByIdAndUpdate(
+        req.params.id,
+        category,
+        {},
+        (err, thecategory) => {
+          if (err) return next(err);
+          else {
+            res.redirect(thecategory.url);
+          }
         }
-      });
+      );
     }
+    // });
+    // }
   },
 ];
 
