@@ -1,7 +1,7 @@
 extends layout
 block content
   h3.heading #{title}
-  form(action="" method='POST')
+  form(action="" method='POST' enctype='multipart/form-data')
     p.form-group
       label(for="category") #[strong Category:]
       select#category.form-control(name='category' type='select')
@@ -10,6 +10,12 @@ block content
     p.form-group 
       label(for="itemName") #[strong Item Name:]
       input#itemName.form-control(type="text" name='itemName' value=(item==undefined ? '' : item.itemName))
+    if item!=undefined
+      if item.itemImage.data!=undefined
+        img(src=('data:image/jpg;base64,'+item.itemImage.data.toString('base64')))
+    p.form-group
+      label(for="itemImage") #[strong Item Image:]
+      input#itemImage.form-control(type='file' name='itemImage')
     p.form-group
       label(for="itemDescription") #[strong Item Description:]
       textarea#itemDescription.form-control(name='itemDescription') #{item==undefined ? '' : item.itemDescription}

@@ -19,6 +19,7 @@ exports.index = (req, res, next) => {
           countCategory: results.countCategory,
           countItem: results.countItem,
         });
+        return;
       }
     }
   );
@@ -33,6 +34,7 @@ exports.category_list = (req, res, next) => {
         title: "Category List",
         categories: result,
       });
+      return;
     }
   });
 };
@@ -55,12 +57,14 @@ exports.category_detail = async (req, res, next) => {
           title: "category_detail",
           category: result,
         });
+        return;
       }
     });
 };
 
 exports.category_create_get = (req, res, next) => {
   res.render("category_form", { title: "Create Category" });
+  return;
 };
 
 exports.category_create_post = [
@@ -76,12 +80,12 @@ exports.category_create_post = [
 
   async (req, res, next) => {
     const errors = validationResult(req);
-    console.log("file=", req.file);
-    console.log("path=", path.join(__dirname, "../"));
+    // console.log("file=", req.file);
+    // console.log("path=", path.join(__dirname, "../"));
     let data;
     try {
       data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
-      console.log("data=", data);
+      // console.log("data=", data);
     } catch (err) {
       console.log(err);
       return next(err);
@@ -105,17 +109,18 @@ exports.category_create_post = [
         (err, result) => {
           if (err) return next(err);
           if (result) {
-            console.log("already exits");
+            // console.log("already exits");
             res.redirect(result.url);
             return;
           } else {
             // console.log(category);
             category.save((err) => {
               if (err) {
-                console.log("in category get");
+                // console.log("in category get");
                 return next(err);
               } else {
                 res.redirect(category.url);
+                return;
               }
             });
           }
@@ -133,6 +138,7 @@ exports.category_update_get = (req, res) => {
         title: "Update Category",
         category: result,
       });
+      return;
     }
   });
 };
@@ -154,24 +160,46 @@ exports.category_update_post = [
     try {
       items = await Category.findById(req.params.id, "item");
     } catch (err) {
-      if (err) return next(err);
+      return next(err);
     }
 
     let data;
-    console.log("update file", req.file);
-    try {
-      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
-      console.log("update data=", data);
-    } catch (err) {
-      console.log(err);
-      return next(err);
+    let contentType;
+    let categoryImage;
+    // console.log("update file", req.file);
+    if (req.file != undefined) {
+      try {
+        data = await fs.readFileSync(
+          path.join(__dirname, "../") + req.file.path
+        );
+        categoryImage = { data: data, contentType: "image/jpg" };
+        // console.log("update data=", data);
+      } catch (err) {
+        console.log(err);
+        return next(err);
+      }
+    } else {
+      try {
+        data = await Category.findById(req.params.id, "categoryImage");
+        if (data == undefined || data == false) {
+          categoryImage = false;
+        } else {
+          categoryImage = {
+            data: data.categoryImage.data,
+            contentType: "image/jpg",
+          };
+        }
+      } catch (err) {
+        console.log(err);
+        return next(err);
+      }
     }
 
     // console.log(items.item);
     const category = new Category({
       categoryName: req.body.categoryName,
       categoryDescription: req.body.categoryDescription,
-      categoryImage: { data: data, contentType: "image/jpg" },
+      categoryImage: categoryImage,
       item: items.item,
       _id: req.params.id,
     });
@@ -204,6 +232,7 @@ exports.category_update_post = [
           if (err) return next(err);
           else {
             res.redirect(thecategory.url);
+            return;
           }
         }
       );
@@ -223,6 +252,7 @@ exports.category_delete_get = (req, res) => {
           title: "Category Delete",
           category: result,
         });
+        return;
       }
     });
 };
@@ -232,24 +262,25 @@ exports.category_delete_post = async (req, res, next) => {
   try {
     category = await Category.findById(req.params.id);
   } catch (err) {
-    if (err) return next(err);
+    return next(err);
   }
 
   try {
     for (let i = 0; i < category.item.length; i++) {
-      console.log(category.item[i]);
+      // console.log(category.item[i]);
       const item_removed = await Item.findByIdAndRemove(category.item[i]);
-      console.log("item_removed", item_removed);
+      // console.log("item_removed", item_removed);
     }
   } catch (err) {
-    if (err) return next(err);
+    return next(err);
   }
 
   try {
     const category_removed = await Category.findByIdAndRemove(req.params.id);
-    console.log("category_removed", category_removed);
+    // console.log("category_removed", category_removed);
     res.redirect("/catalog/categories");
+    return;
   } catch (err) {
-    if (err) return next(err);
+    return next(err);
   }
 };

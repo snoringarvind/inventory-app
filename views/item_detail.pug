@@ -4,7 +4,8 @@ block content
   p #[strong Item Description:] #{item.itemDescription}
   p #[strong Item Price:] #{item.itemPrice}
   p #[strong Item Stock:] #{item.itemStock}
-  img(src=item.itemImage)
+  if item.itemImage.data!=undefined
+    img(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64'))
   p
     a(href=item.url+'/update')
       button.btn.btn-primary(type='button') Update Item

@@ -6,7 +6,7 @@ const ItemSchema = Schema({
   itemDescription: { type: String, required: true },
   itemPrice: { type: String, required: true },
   itemStock: { type: String, required: true },
-  itemImage: [{ data: Buffer, contentType: String }],
+  itemImage: { data: Buffer, contentType: String },
 });
 
 ItemSchema.virtual("url").get(function () {

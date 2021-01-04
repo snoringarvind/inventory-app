@@ -1,13 +1,16 @@
 const Item = require("../models/Item");
 const Category = require("../models/Category");
 const { body, validationResult } = require("express-validator");
-const { update } = require("../models/Item");
+const path = require("path");
+const fs = require("fs");
+const { Error } = require("mongoose");
 
 exports.item_list = (req, res) => {
   Item.find({}).exec((err, result) => {
     if (err) return next(err);
     else {
       res.render("item_list", { title: "Item List", items: result });
+      return;
     }
   });
 };
@@ -17,6 +20,7 @@ exports.item_detail = (req, res) => {
     if (err) return next(err);
     else {
       res.render("item_detail", { title: "item_detail", item: result });
+      return;
     }
   });
 };
@@ -26,6 +30,7 @@ exports.item_create_get = (req, res, next) => {
     if (err) return next(err);
     else {
       res.render("item_form", { title: "Create Item", categories: result });
+      return;
     }
   });
 };
@@ -47,14 +52,28 @@ exports.item_create_post = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
+  body("itemImage").escape(),
+
   async (req, res, next) => {
+    // console.log("hahahah");
     const errors = validationResult(req);
+
+    let data;
+    // console.log("item create post=", req.file);
+    try {
+      data = await fs.readFileSync(path.join(__dirname, "../") + req.file.path);
+      // console.log("item create post=", data);
+    } catch (err) {
+      // console.log(data);
+      return next(err);
+    }
 
     const item = new Item({
       itemName: req.body.itemName,
       itemDescription: req.body.itemDescription,
       itemPrice: req.body.itemPrice,
       itemStock: req.body.itemStock,
+      itemImage: { data: data, contentType: "image/jpg" },
     });
 
     let categories;
@@ -65,12 +84,12 @@ exports.item_create_post = [
       return next(err);
     }
 
-    console.log("req.body.category=", req.body.category);
-    console.log("categories", categories);
+    // console.log("req.body.category=", req.body.category);
+    // console.log("categories", categories);
     if (!errors.isEmpty()) {
       for (let i = 0; i < categories.length; i++) {
         if (categories[i]._id.toString() == req.body.category.toString()) {
-          console.log("categories[i]=", categories[i]);
+          // console.log("categories[i]=", categories[i]);
           categories[i].selected = true;
         }
       }
@@ -85,17 +104,18 @@ exports.item_create_post = [
     Item.findOne({ itemName: item.itemName }, (err, result) => {
       if (err) return next(err);
       if (result) {
+        // console.log("already exists");
         res.redirect(result.url);
         return;
       }
     });
-    console.log("item=", item);
+    // console.log("item=", item);
     let category;
     try {
       category = await Category.findById(req.body.category, "item");
       //adding item to category
       category.item.push(item._id);
-      console.log("category", category.item);
+      // console.log("category", category.item);
     } catch (err) {
       return next(err);
     }
@@ -104,14 +124,15 @@ exports.item_create_post = [
         req.body.category,
         { item: category.item }
       );
-      console.log("updateCategory=", updatedCategory);
+      // console.log("updateCategory=", updatedCategory);
     } catch (err) {
       return next(err);
     }
     try {
       const saveItem = await item.save();
-      console.log("saveitem=", saveItem);
+      // console.log("saveitem=", saveItem);
       res.redirect(item.url);
+      return;
     } catch (err) {
       return next(err);
     }
@@ -138,9 +159,9 @@ exports.item_update_get = async (req, res, next) => {
     return next(err);
   }
 
-  console.log(categories);
-  console.log(category);
-  console.log(item);
+  // console.log(categories);
+  // console.log(category);
+  // console.log(item);
 
   for (let i = 0; i < categories.length; i++) {
     if (categories[i]._id.toString() == category[0]._id) {
@@ -153,6 +174,7 @@ exports.item_update_get = async (req, res, next) => {
     categories: categories,
     item: item,
   });
+  return;
 };
 
 exports.item_update_post = [
@@ -172,14 +194,47 @@ exports.item_update_post = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
+  body("itemImage").escape(),
   async (req, res, next) => {
     const errors = validationResult(req);
+
+    let data;
+    let contentType;
+    let itemImage;
+    //using if and else cause maybe if you don't wish to update the image
+    if (req.file != undefined) {
+      try {
+        data = await fs.readFileSync(
+          path.join(__dirname, "../") + req.file.path
+        );
+        itemImage = { data: data, contentType: "image/jpg" };
+      } catch (err) {
+        // console.log(err);
+        return next(err);
+      }
+    } else {
+      try {
+        data = await Item.findById(req.params.id, "itemImage");
+        // console.log(data);
+        // console.log("data update item post = ", data.itemImage.data);
+        //*usinf if-else in case the image was not there in the first place
+        if (data == undefined || data == false) {
+          itemImage = false;
+        } else {
+          itemImage = { data: data.itemImage.data, contentType: "image/jpg" };
+        }
+      } catch (err) {
+        // console.log(err);
+        return next(err);
+      }
+    }
 
     const item = new Item({
       itemName: req.body.itemName,
       itemDescription: req.body.itemDescription,
       itemPrice: req.body.itemPrice,
       itemStock: req.body.itemStock,
+      itemImage: itemImage,
       _id: req.params.id,
     });
 
@@ -209,16 +264,17 @@ exports.item_update_post = [
       return;
     }
 
-    try {
-      const itemOne = await Item.findOne({ itemName: item.itemName });
-      if (itemOne) {
-        console.log("ALready exists item with same name");
-        res.redirect(itemOne.url);
-        return;
-      }
-    } catch (err) {
-      return next(err);
-    }
+    //*commenting this out because maybe if you just want to update the image and the item name is not updated, it will return you back
+    // try {
+    //   const itemOne = await Item.findOne({ itemName: item.itemName });
+    //   if (itemOne) {
+    //     console.log("ALready exists item with same name");
+    //     res.redirect(itemOne.url);
+    //     return;
+    //   }
+    // } catch (err) {
+    //   return next(err);
+    // }
 
     // console.log("item=", item);
     let category;
@@ -238,14 +294,16 @@ exports.item_update_post = [
         req.body.category,
         { item: [...category.item] }
       );
-      console.log("updateCategory=", updateCategory);
+      // console.log("updateCategory=", updateCategory);
     } catch (err) {
       return next(err);
     }
     try {
+      // console.log("item=", item);
       const updateItem = await Item.findByIdAndUpdate(req.params.id, item, {});
-      console.log("updateitem=", updateItem);
+      // console.log("updateitem=", updateItem);
       res.redirect(item.url);
+      return;
     } catch (err) {
       return next(err);
     }
@@ -256,10 +314,12 @@ exports.item_delete_get = (req, res) => {
   Item.findById(req.params.id, (err, result) => {
     if (err) return next(err);
     if (result == null) {
-      console.log("item not found");
+      // console.log("item not found");
       res.redirect("/catalog/items");
+      return;
     } else {
       res.render("item_delete", { title: "Delete Item", item: result });
+      return;
     }
   });
 };
@@ -270,14 +330,14 @@ exports.item_delete_post = async (req, res, next) => {
   try {
     // items = await Category.find({}, "item");
     item = await Category.findOne({ item: req.params.id }, "item");
-    console.log("item.item", item.item);
+    // console.log("item.item", item.item);
     // console.log(items);
     for (let i = 0; i < item.item.length; i++) {
       if (item.item[i].toString() != req.params.id.toString()) {
         newarr.push(item.item[i]);
       }
     }
-    console.log("newarr", newarr);
+    // console.log("newarr", newarr);
   } catch (err) {
     return next(err);
   }
@@ -287,15 +347,16 @@ exports.item_delete_post = async (req, res, next) => {
       { item: req.params.id },
       { $set: { item: newarr } }
     );
-    console.log("update Category=", updateCategory);
+    // console.log("update Category=", updateCategory);
   } catch (err) {
     return next(err);
   }
 
   try {
     const updateItem = await Item.findByIdAndRemove(req.params.id);
-    console.log("updateItem=", updateItem);
+    // console.log("updateItem=", updateItem);
     res.redirect("/catalog/items");
+    return;
   } catch (err) {
     return next(err);
   }
