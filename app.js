@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
+const compression = require("compression");
+const helmet = require("helmet");
 const mongoose = require("mongoose");
 require("dotenv/config");
 
@@ -10,6 +12,8 @@ const indexRouter = require("./routes/index");
 const catalogRouter = require("./routes/catalog");
 
 const app = express();
+app.use(helmet());
+app.use(compression());
 
 //set mongoose connection
 mongoose.connect(process.env.DB_Connection, {
