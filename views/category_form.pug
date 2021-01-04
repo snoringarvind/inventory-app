@@ -1,7 +1,7 @@
 extends layout
 block content
   h3.heading #[strong #{title}]
-  if add_item
+  if add_item!=false
     p
       a(href="/catalog/item/create")
         button.btn.btn-primary Add Item 
