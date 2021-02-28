@@ -61,13 +61,35 @@ exports.item_create_post = [
     let data;
     let contentType;
     let itemImage;
+    let categories;
+
+    const item = new Item({
+      itemName: req.body.itemName,
+      itemDescription: req.body.itemDescription,
+      itemPrice: req.body.itemPrice,
+      itemStock: req.body.itemStock,
+      itemImage: { data: data, contentType: req.file.mimetype },
+    });
+
+    if (
+      req.mimetype !== "image/jpg" ||
+      req.mimetype !== "image/jpeg" ||
+      req.mimetype !== "image/png"
+    ) {
+      return res.render("item_form", {
+        title: "Create Item",
+        item: item,
+        categories: categories,
+        errors: [{ msg: "only images allowed" }],
+      });
+    }
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
       try {
         data = await fs.readFileSync(
           path.join(__dirname, "../") + req.file.path
         );
-        itemImage = { data: data, contentType: "image/jpg" };
+        itemImage = { data: data, contentType: req.file.mimetype };
       } catch (err) {
         // console.log(err);
         return next(err);
@@ -81,21 +103,16 @@ exports.item_create_post = [
         if (data == undefined || data == false) {
           itemImage = false;
         } else {
-          itemImage = { data: data.itemImage.data, contentType: "image/jpg" };
+          itemImage = {
+            data: data.itemImage.data,
+            contentType: req.file.mimetype,
+          };
         }
       } catch (err) {
         // console.log(err);
         return next(err);
       }
     }
-
-    const item = new Item({
-      itemName: req.body.itemName,
-      itemDescription: req.body.itemDescription,
-      itemPrice: req.body.itemPrice,
-      itemStock: req.body.itemStock,
-      itemImage: { data: data, contentType: "image/jpg" },
-    });
 
     //unlink(delete) the file from computer since it has been uploaded to database
     try {
@@ -104,7 +121,6 @@ exports.item_create_post = [
       console.log("file is not deleted from computer", err);
     }
 
-    let categories;
     try {
       categories = await Category.find({}, "categoryName");
       // categories = [categories];
@@ -230,13 +246,36 @@ exports.item_update_post = [
     let data;
     let contentType;
     let itemImage;
+    let categories;
+    const item = new Item({
+      itemName: req.body.itemName,
+      itemDescription: req.body.itemDescription,
+      itemPrice: req.body.itemPrice,
+      itemStock: req.body.itemStock,
+      itemImage: itemImage,
+      _id: req.params.id,
+    });
+
+    if (
+      req.mimetype !== "image/jpg" ||
+      req.mimetype !== "image/jpeg" ||
+      req.mimetype !== "image/png"
+    ) {
+      return res.render("item_form", {
+        title: "Create Item",
+        item: item,
+        categories: categories,
+        errors: [{ msg: "only images allowed" }],
+      });
+    }
+
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
       try {
         data = await fs.readFileSync(
           path.join(__dirname, "../") + req.file.path
         );
-        itemImage = { data: data, contentType: "image/jpg" };
+        itemImage = { data: data, contentType: req.file.mimetype };
       } catch (err) {
         // console.log(err);
         return next(err);
@@ -250,22 +289,16 @@ exports.item_update_post = [
         if (data == undefined || data == false) {
           itemImage = false;
         } else {
-          itemImage = { data: data.itemImage.data, contentType: "image/jpg" };
+          itemImage = {
+            data: data.itemImage.data,
+            contentType: req.file.mimetype,
+          };
         }
       } catch (err) {
         // console.log(err);
         return next(err);
       }
     }
-
-    const item = new Item({
-      itemName: req.body.itemName,
-      itemDescription: req.body.itemDescription,
-      itemPrice: req.body.itemPrice,
-      itemStock: req.body.itemStock,
-      itemImage: itemImage,
-      _id: req.params.id,
-    });
 
     //unlink(delete) the file from computer since it has been uploaded to database
     try {
@@ -274,7 +307,6 @@ exports.item_update_post = [
       console.log("file is not deleted from computer", err);
     }
 
-    let categories;
     try {
       categories = await Category.find({}, "categoryName");
       // categories = [categories];

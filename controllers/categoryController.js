@@ -80,19 +80,40 @@ exports.category_create_post = [
   body("categoryImage").escape(),
 
   async (req, res, next) => {
+    console.log(req.file);
+
     const errors = validationResult(req);
-    // console.log("file=", req.file);
+    console.log("file=", req.file);
+
     // console.log("path=", path.join(__dirname, "../"));
     let data;
     let contentType;
     let categoryImage;
+    const category = new Category({
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: categoryImage,
+    });
+
+    if (
+      req.mimetype !== "image/jpg" ||
+      req.mimetype !== "image/jpeg" ||
+      req.mimetype !== "image/png"
+    ) {
+      return res.render("category_form", {
+        title: "Category Create",
+        category: category,
+        errors: [{ msg: "only images allowed" }],
+      });
+    }
+
     // console.log("update file", req.file);
     if (req.file != undefined) {
       try {
         data = await fs.readFileSync(
           path.join(__dirname, "../") + req.file.path
         );
-        categoryImage = { data: data, contentType: "image/jpg" };
+        categoryImage = { data: data, contentType: req.file.mimetype };
         // console.log("update data=", data);
       } catch (err) {
         console.log("error=", err);
@@ -106,7 +127,7 @@ exports.category_create_post = [
         } else {
           categoryImage = {
             data: data.categoryImage.data,
-            contentType: "image/jpg",
+            contentType: req.file.mimetype,
           };
         }
       } catch (err) {
@@ -114,13 +135,6 @@ exports.category_create_post = [
         return next(err);
       }
     }
-
-    const category = new Category({
-      categoryName: req.body.categoryName,
-      categoryDescription: req.body.categoryDescription,
-      categoryImage: categoryImage,
-    });
-
     //unlink(delete) the file from computer since it has been uploaded to database
     if (req.file != undefined) {
       try {
@@ -132,13 +146,12 @@ exports.category_create_post = [
 
     if (!errors.isEmpty()) {
       // errors.push({ msg: "category already exists" });
-      // console.log(errors);
-      res.render("category_form", {
+      console.log(errors);
+      return res.render("category_form", {
         title: "Category Create",
         category: category,
-        errors: errors,
+        errors: errors.array(),
       });
-      return;
     } else {
       Category.findOne({ categoryName: req.body.categoryName }).exec(
         (err, result) => {
@@ -201,13 +214,34 @@ exports.category_update_post = [
     let data;
     let contentType;
     let categoryImage;
+
+    const category = new Category({
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: categoryImage,
+      item: items.item,
+      _id: req.params.id,
+    });
+
+    if (
+      req.mimetype !== "image/jpg" ||
+      req.mimetype !== "image/jpeg" ||
+      req.mimetype !== "image/png"
+    ) {
+      return res.render("category_form", {
+        title: "Category Create",
+        category: category,
+        errors: [{ msg: "only images allowed" }],
+      });
+    }
+
     // console.log("update file", req.file);
     if (req.file != undefined) {
       try {
         data = await fs.readFileSync(
           path.join(__dirname, "../") + req.file.path
         );
-        categoryImage = { data: data, contentType: "image/jpg" };
+        categoryImage = { data: data, contentType: req.file.mimetype };
         // console.log("update data=", data);
       } catch (err) {
         console.log(err);
@@ -221,7 +255,7 @@ exports.category_update_post = [
         } else {
           categoryImage = {
             data: data.categoryImage.data,
-            contentType: "image/jpg",
+            contentType: req.file.mimetype,
           };
         }
       } catch (err) {
@@ -231,13 +265,6 @@ exports.category_update_post = [
     }
 
     // console.log(items.item);
-    const category = new Category({
-      categoryName: req.body.categoryName,
-      categoryDescription: req.body.categoryDescription,
-      categoryImage: categoryImage,
-      item: items.item,
-      _id: req.params.id,
-    });
 
     //unlink(delete) the file from computer since it has been uploaded to database
     try {
