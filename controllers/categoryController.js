@@ -28,7 +28,9 @@ exports.index = (req, res, next) => {
 exports.category_list = (req, res, next) => {
   Category.find({}).exec((err, result) => {
     if (err) return next(err);
-    else {
+    else if (result.length == 0) {
+      return res.render("No categories created.");
+    } else {
       // console.log(result);
       res.render("category_list", {
         title: "Category List",

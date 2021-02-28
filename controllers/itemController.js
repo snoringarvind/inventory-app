@@ -8,7 +8,9 @@ const { Error } = require("mongoose");
 exports.item_list = (req, res) => {
   Item.find({}).exec((err, result) => {
     if (err) return next(err);
-    else {
+    else if (result.length === 0) {
+      return res.render("No items.");
+    } else {
       res.render("item_list", { title: "Item List", items: result });
       return;
     }
@@ -28,7 +30,11 @@ exports.item_detail = (req, res) => {
 exports.item_create_get = (req, res, next) => {
   Category.find({}, "categoryName").exec((err, result) => {
     if (err) return next(err);
-    else {
+    else if (result.length == 0) {
+      return res.render(
+        "Inorder to add items, please create a category first."
+      );
+    } else {
       res.render("item_form", { title: "Create Item", categories: result });
       return;
     }
