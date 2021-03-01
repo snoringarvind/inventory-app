@@ -9,7 +9,7 @@ exports.item_list = (req, res) => {
   Item.find({}).exec((err, result) => {
     if (err) return next(err);
     else if (result.length === 0) {
-      return res.render("No items.");
+      return res.render("item_list", { title: "No items.", items: [] });
     } else {
       res.render("item_list", { title: "Item List", items: result });
       return;
@@ -31,9 +31,10 @@ exports.item_create_get = (req, res, next) => {
   Category.find({}, "categoryName").exec((err, result) => {
     if (err) return next(err);
     else if (result.length == 0) {
-      return res.render(
-        "Inorder to add items, please create a category first."
-      );
+      return res.render("item_list", {
+        title: "Inorder to add items, please create a category first.",
+        items: [],
+      });
     } else {
       res.render("item_form", { title: "Create Item", categories: result });
       return;
@@ -76,18 +77,19 @@ exports.item_create_post = [
       itemStock: req.body.itemStock,
       itemImage: { data: data, contentType: req.file.mimetype },
     });
-
-    if (
-      req.mimetype !== "image/jpg" ||
-      req.mimetype !== "image/jpeg" ||
-      req.mimetype !== "image/png"
-    ) {
-      return res.render("item_form", {
-        title: "Create Item",
-        item: item,
-        categories: categories,
-        errors: [{ msg: "only images allowed" }],
-      });
+    if (req.file) {
+      if (
+        req.file.mimetype.toString() !== "image/jpg" &&
+        req.file.mimetype.toString() !== "image/jpeg" &&
+        req.file.mimetype.toString() !== "image/png"
+      ) {
+        //  console.log(req.file.mimetype);
+        return res.render("category_form", {
+          title: "Category Create",
+          category: category,
+          errors: [{ msg: "only images allowed" }],
+        });
+      }
     }
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
@@ -124,7 +126,7 @@ exports.item_create_post = [
     try {
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
     } catch (err) {
-      console.log("file is not deleted from computer", err);
+      // console.log("file is not deleted from computer", err);
     }
 
     try {
@@ -262,17 +264,19 @@ exports.item_update_post = [
       _id: req.params.id,
     });
 
-    if (
-      req.mimetype !== "image/jpg" ||
-      req.mimetype !== "image/jpeg" ||
-      req.mimetype !== "image/png"
-    ) {
-      return res.render("item_form", {
-        title: "Create Item",
-        item: item,
-        categories: categories,
-        errors: [{ msg: "only images allowed" }],
-      });
+    if (req.file) {
+      if (
+        req.file.mimetype.toString() !== "image/jpg" &&
+        req.file.mimetype.toString() !== "image/jpeg" &&
+        req.file.mimetype.toString() !== "image/png"
+      ) {
+        //  console.log(req.file.mimetype);
+        return res.render("category_form", {
+          title: "Category Create",
+          category: category,
+          errors: [{ msg: "only images allowed" }],
+        });
+      }
     }
 
     //using if and else cause maybe if you don't wish to update the image
@@ -310,7 +314,7 @@ exports.item_update_post = [
     try {
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
     } catch (err) {
-      console.log("file is not deleted from computer", err);
+      // console.log("file is not deleted from computer", err);
     }
 
     try {

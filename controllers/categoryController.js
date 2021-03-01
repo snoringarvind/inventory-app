@@ -29,7 +29,10 @@ exports.category_list = (req, res, next) => {
   Category.find({}).exec((err, result) => {
     if (err) return next(err);
     else if (result.length == 0) {
-      return res.render("No categories created.");
+      return res.render("category_list", {
+        title: "No categories created.",
+        categories: [],
+      });
     } else {
       // console.log(result);
       res.render("category_list", {
@@ -82,10 +85,10 @@ exports.category_create_post = [
   body("categoryImage").escape(),
 
   async (req, res, next) => {
-    console.log(req.file);
+    // console.log(req.file);
 
     const errors = validationResult(req);
-    console.log("file=", req.file);
+    // console.log("file=", req.file);
 
     // console.log("path=", path.join(__dirname, "../"));
     let data;
@@ -97,16 +100,19 @@ exports.category_create_post = [
       categoryImage: categoryImage,
     });
 
-    if (
-      req.mimetype !== "image/jpg" ||
-      req.mimetype !== "image/jpeg" ||
-      req.mimetype !== "image/png"
-    ) {
-      return res.render("category_form", {
-        title: "Category Create",
-        category: category,
-        errors: [{ msg: "only images allowed" }],
-      });
+    if (req.file) {
+      if (
+        req.file.mimetype.toString() !== "image/jpg" &&
+        req.file.mimetype.toString() !== "image/jpeg" &&
+        req.file.mimetype.toString() !== "image/png"
+      ) {
+        // console.log(req.file.mimetype);
+        return res.render("category_form", {
+          title: "Category Create",
+          category: category,
+          errors: [{ msg: "only images allowed" }],
+        });
+      }
     }
 
     // console.log("update file", req.file);
@@ -118,7 +124,7 @@ exports.category_create_post = [
         categoryImage = { data: data, contentType: req.file.mimetype };
         // console.log("update data=", data);
       } catch (err) {
-        console.log("error=", err);
+        // console.log("error=", err);
         return next(err);
       }
     } else {
@@ -133,7 +139,7 @@ exports.category_create_post = [
           };
         }
       } catch (err) {
-        console.log("error=", err);
+        // console.log("error=", err);
         return next(err);
       }
     }
@@ -142,13 +148,13 @@ exports.category_create_post = [
       try {
         await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
       } catch (err) {
-        console.log("file is not deleted from computer", err);
+        // console.log("file is not deleted from computer", err);
       }
     }
 
     if (!errors.isEmpty()) {
       // errors.push({ msg: "category already exists" });
-      console.log(errors);
+      // console.log(errors);
       return res.render("category_form", {
         title: "Category Create",
         category: category,
@@ -159,7 +165,7 @@ exports.category_create_post = [
         (err, result) => {
           if (err) return next(err);
           if (result) {
-            console.log("category with this name already exits");
+            // console.log("category with this name already exits");
             res.redirect(result.url);
             return;
           } else {
@@ -225,16 +231,19 @@ exports.category_update_post = [
       _id: req.params.id,
     });
 
-    if (
-      req.mimetype !== "image/jpg" ||
-      req.mimetype !== "image/jpeg" ||
-      req.mimetype !== "image/png"
-    ) {
-      return res.render("category_form", {
-        title: "Category Create",
-        category: category,
-        errors: [{ msg: "only images allowed" }],
-      });
+    if (req.file) {
+      if (
+        req.file.mimetype.toString() !== "image/jpg" &&
+        req.file.mimetype.toString() !== "image/jpeg" &&
+        req.file.mimetype.toString() !== "image/png"
+      ) {
+        //  console.log(req.file.mimetype);
+        return res.render("category_form", {
+          title: "Category Create",
+          category: category,
+          errors: [{ msg: "only images allowed" }],
+        });
+      }
     }
 
     // console.log("update file", req.file);
@@ -246,7 +255,7 @@ exports.category_update_post = [
         categoryImage = { data: data, contentType: req.file.mimetype };
         // console.log("update data=", data);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         return next(err);
       }
     } else {
@@ -261,7 +270,7 @@ exports.category_update_post = [
           };
         }
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         return next(err);
       }
     }
@@ -272,7 +281,7 @@ exports.category_update_post = [
     try {
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
     } catch (err) {
-      console.log("file is not deleted from computer", err);
+      // console.log("file is not deleted from computer", err);
     }
 
     // console.log("category=", category);
