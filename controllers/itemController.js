@@ -65,18 +65,6 @@ exports.item_create_post = [
     // console.log("hahahah");
     const errors = validationResult(req);
 
-    let data;
-    let contentType;
-    let itemImage;
-    let categories;
-
-    const item = new Item({
-      itemName: req.body.itemName,
-      itemDescription: req.body.itemDescription,
-      itemPrice: req.body.itemPrice,
-      itemStock: req.body.itemStock,
-      itemImage: { data: data, contentType: req.file.mimetype },
-    });
     if (req.file) {
       if (
         req.file.mimetype.toString() !== "image/jpg" &&
@@ -84,13 +72,47 @@ exports.item_create_post = [
         req.file.mimetype.toString() !== "image/png"
       ) {
         //  console.log(req.file.mimetype);
-        return res.render("category_form", {
-          title: "Category Create",
-          category: category,
+        return res.render("item_form", {
+          title: "Create Item",
+          item: {
+            itemName: req.body.itemName,
+            itemDescription: req.body.itemDescription,
+            itemPrice: req.body.itemPrice,
+            itemStock: req.body.itemStock,
+            itemImage: "",
+          },
+          categories: categories,
           errors: [{ msg: "only images allowed" }],
         });
       }
     }
+    if (!errors.isEmpty()) {
+      for (let i = 0; i < categories.length; i++) {
+        if (categories[i]._id.toString() == req.body.category.toString()) {
+          // console.log("categories[i]=", categories[i]);
+          categories[i].selected = true;
+        }
+      }
+      res.render("item_form", {
+        title: "Create Item",
+        item: {
+          itemName: req.body.itemName,
+          itemDescription: req.body.itemDescription,
+          itemPrice: req.body.itemPrice,
+          itemStock: req.body.itemStock,
+          itemImage: "",
+        },
+        categories: categories,
+        errors: errors.array(),
+      });
+      return;
+    }
+
+    let data;
+    let contentType;
+    let itemImage;
+    let categories;
+
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
       try {
@@ -102,26 +124,15 @@ exports.item_create_post = [
         // console.log(err);
         return next(err);
       }
-    } else {
-      try {
-        data = await Item.findById(req.params.id, "itemImage");
-        // console.log(data);
-        // console.log("data update item post = ", data.itemImage.data);
-        //*usinf if-else in case the image was not there in the first place
-        if (data == undefined || data == false) {
-          itemImage = false;
-        } else {
-          itemImage = {
-            data: data.itemImage.data,
-            contentType: req.file.mimetype,
-          };
-        }
-      } catch (err) {
-        // console.log(err);
-        return next(err);
-      }
     }
 
+    const item = new Item({
+      itemName: req.body.itemName,
+      itemDescription: req.body.itemDescription,
+      itemPrice: req.body.itemPrice,
+      itemStock: req.body.itemStock,
+      itemImage: itemImage || "",
+    });
     //unlink(delete) the file from computer since it has been uploaded to database
     try {
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
@@ -138,25 +149,11 @@ exports.item_create_post = [
 
     // console.log("req.body.category=", req.body.category);
     // console.log("categories", categories);
-    if (!errors.isEmpty()) {
-      for (let i = 0; i < categories.length; i++) {
-        if (categories[i]._id.toString() == req.body.category.toString()) {
-          // console.log("categories[i]=", categories[i]);
-          categories[i].selected = true;
-        }
-      }
-      res.render("item_form", {
-        title: "Create Item",
-        item: item,
-        categories: categories,
-        errors: errors.array(),
-      });
-      return;
-    }
+
     Item.findOne({ itemName: item.itemName }, (err, result) => {
       if (err) return next(err);
       if (result) {
-        // console.log("already exists");
+        console.log("already exists");
         res.redirect(result.url);
         return;
       }
@@ -251,19 +248,6 @@ exports.item_update_post = [
   async (req, res, next) => {
     const errors = validationResult(req);
 
-    let data;
-    let contentType;
-    let itemImage;
-    let categories;
-    const item = new Item({
-      itemName: req.body.itemName,
-      itemDescription: req.body.itemDescription,
-      itemPrice: req.body.itemPrice,
-      itemStock: req.body.itemStock,
-      itemImage: itemImage,
-      _id: req.params.id,
-    });
-
     if (req.file) {
       if (
         req.file.mimetype.toString() !== "image/jpg" &&
@@ -271,14 +255,50 @@ exports.item_update_post = [
         req.file.mimetype.toString() !== "image/png"
       ) {
         //  console.log(req.file.mimetype);
-        return res.render("category_form", {
-          title: "Category Create",
-          category: category,
+        return res.render("item_form", {
+          title: "Create Item",
+          item: {
+            itemName: req.body.itemName,
+            itemDescription: req.body.itemDescription,
+            itemPrice: req.body.itemPrice,
+            itemStock: req.body.itemStock,
+            itemImage: "",
+          },
+          categories: categories,
           errors: [{ msg: "only images allowed" }],
         });
       }
     }
+    // console.log("req.body.category=", req.body.category);
+    // console.log("categories", categories);
+    if (!errors.isEmpty()) {
+      for (let i = 0; i < categories.length; i++) {
+        if (categories[i]._id.toString() == req.body.category.toString()) {
+          // console.log("categories[i]=", categories[i]);
+          categories[i].selected = true;
+        }
+      }
+      res.render("item_form", {
+        title: "Create Item",
+        item: {
+          itemName: req.body.itemName,
+          itemDescription: req.body.itemDescription,
+          itemPrice: req.body.itemPrice,
+          itemStock: req.body.itemStock,
+          itemImage: "",
+        },
+        categories: categories,
+        errors: errors.array(),
+      });
+      return;
+    }
 
+    let data;
+    let contentType;
+    let itemImage;
+    let categories;
+
+    console.log(req.file, 301);
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
       try {
@@ -290,25 +310,20 @@ exports.item_update_post = [
         // console.log(err);
         return next(err);
       }
-    } else {
-      try {
-        data = await Item.findById(req.params.id, "itemImage");
-        // console.log(data);
-        // console.log("data update item post = ", data.itemImage.data);
-        //*usinf if-else in case the image was not there in the first place
-        if (data == undefined || data == false) {
-          itemImage = false;
-        } else {
-          itemImage = {
-            data: data.itemImage.data,
-            contentType: req.file.mimetype,
-          };
-        }
-      } catch (err) {
-        // console.log(err);
-        return next(err);
-      }
     }
+
+    console.log(itemImage);
+
+    const item = new Item({
+      itemName: req.body.itemName,
+      itemDescription: req.body.itemDescription,
+      itemPrice: req.body.itemPrice,
+      itemStock: req.body.itemStock,
+      itemImage: itemImage || "",
+      _id: req.params.id,
+    });
+
+    console.log(item, 324);
 
     //unlink(delete) the file from computer since it has been uploaded to database
     try {
@@ -322,24 +337,6 @@ exports.item_update_post = [
       // categories = [categories];
     } catch (err) {
       return next(err);
-    }
-
-    // console.log("req.body.category=", req.body.category);
-    // console.log("categories", categories);
-    if (!errors.isEmpty()) {
-      for (let i = 0; i < categories.length; i++) {
-        if (categories[i]._id.toString() == req.body.category.toString()) {
-          // console.log("categories[i]=", categories[i]);
-          categories[i].selected = true;
-        }
-      }
-      res.render("item_form", {
-        title: "Create Item",
-        item: item,
-        categories: categories,
-        errors: errors.array(),
-      });
-      return;
     }
 
     //*commenting this out because maybe if you just want to update the image and the item name is not updated, it will return you back
@@ -377,9 +374,9 @@ exports.item_update_post = [
       return next(err);
     }
     try {
-      // console.log("item=", item);
+      console.log("item=", item);
       const updateItem = await Item.findByIdAndUpdate(req.params.id, item, {});
-      // console.log("updateitem=", updateItem);
+
       res.redirect(item.url);
       return;
     } catch (err) {

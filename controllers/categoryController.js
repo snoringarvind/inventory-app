@@ -88,17 +88,6 @@ exports.category_create_post = [
     // console.log(req.file);
 
     const errors = validationResult(req);
-    // console.log("file=", req.file);
-
-    // console.log("path=", path.join(__dirname, "../"));
-    let data;
-    let contentType;
-    let categoryImage;
-    const category = new Category({
-      categoryName: req.body.categoryName,
-      categoryDescription: req.body.categoryDescription,
-      categoryImage: categoryImage,
-    });
 
     if (req.file) {
       if (
@@ -109,11 +98,36 @@ exports.category_create_post = [
         // console.log(req.file.mimetype);
         return res.render("category_form", {
           title: "Category Create",
-          category: category,
+          category: {
+            categoryName: req.body.categoryName,
+            categoryDescription: req.body.categoryDescription,
+            categoryImage: "",
+          },
           errors: [{ msg: "only images allowed" }],
         });
       }
     }
+
+    if (!errors.isEmpty()) {
+      // errors.push({ msg: "category already exists" });
+      // console.log(errors);
+      return res.render("category_form", {
+        title: "Category Create",
+        category: {
+          categoryName: req.body.categoryName,
+          categoryDescription: req.body.categoryDescription,
+          categoryImage: "",
+        },
+        errors: errors.array(),
+      });
+    }
+    // console.log("file=", req.file);
+
+    // console.log("path=", path.join(__dirname, "../"));
+    let data;
+    let contentType;
+    let categoryImage;
+    console.log(req.body);
 
     // console.log("update file", req.file);
     if (req.file != undefined) {
@@ -127,22 +141,14 @@ exports.category_create_post = [
         // console.log("error=", err);
         return next(err);
       }
-    } else {
-      try {
-        data = await Category.findById(req.params.id, "categoryImage");
-        if (data == undefined || data == false) {
-          categoryImage = false;
-        } else {
-          categoryImage = {
-            data: data.categoryImage.data,
-            contentType: req.file.mimetype,
-          };
-        }
-      } catch (err) {
-        // console.log("error=", err);
-        return next(err);
-      }
     }
+
+    const category = new Category({
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: categoryImage || "",
+    });
+
     //unlink(delete) the file from computer since it has been uploaded to database
     if (req.file != undefined) {
       try {
@@ -151,38 +157,27 @@ exports.category_create_post = [
         // console.log("file is not deleted from computer", err);
       }
     }
-
-    if (!errors.isEmpty()) {
-      // errors.push({ msg: "category already exists" });
-      // console.log(errors);
-      return res.render("category_form", {
-        title: "Category Create",
-        category: category,
-        errors: errors.array(),
-      });
-    } else {
-      Category.findOne({ categoryName: req.body.categoryName }).exec(
-        (err, result) => {
-          if (err) return next(err);
-          if (result) {
-            // console.log("category with this name already exits");
-            res.redirect(result.url);
-            return;
-          } else {
-            // console.log(category);
-            category.save((err) => {
-              if (err) {
-                // console.log("in category get");
-                return next(err);
-              } else {
-                res.redirect(category.url);
-                return;
-              }
-            });
-          }
+    Category.findOne({ categoryName: req.body.categoryName }).exec(
+      (err, result) => {
+        if (err) return next(err);
+        if (result) {
+          // console.log("category with this name already exits");
+          res.redirect(result.url);
+          return;
+        } else {
+          // console.log(category);
+          category.save((err) => {
+            if (err) {
+              // console.log("in category get");
+              return next(err);
+            } else {
+              res.redirect(category.url);
+              return;
+            }
+          });
         }
-      );
-    }
+      }
+    );
   },
 ];
 
@@ -211,6 +206,39 @@ exports.category_update_post = [
   body("categoryImage").escape(),
   async (req, res, next) => {
     const errors = validationResult(req);
+
+    if (req.file) {
+      if (
+        req.file.mimetype.toString() !== "image/jpg" &&
+        req.file.mimetype.toString() !== "image/jpeg" &&
+        req.file.mimetype.toString() !== "image/png"
+      ) {
+        // console.log(req.file.mimetype);
+        return res.render("category_form", {
+          title: "Category Create",
+          category: {
+            categoryName: req.body.categoryName,
+            categoryDescription: req.body.categoryDescription,
+            categoryImage: "",
+          },
+          errors: [{ msg: "only images allowed" }],
+        });
+      }
+    }
+
+    // console.log("category=", category);
+    if (!errors.isEmpty()) {
+      res.render("category_form", {
+        title: "Update Category",
+        category: {
+          categoryName: req.body.categoryName,
+          categoryDescription: req.body.categoryDescription,
+          categoryImage: "",
+        },
+        errors: errors.array(),
+      });
+      return;
+    }
     let items;
 
     try {
@@ -222,29 +250,6 @@ exports.category_update_post = [
     let data;
     let contentType;
     let categoryImage;
-
-    const category = new Category({
-      categoryName: req.body.categoryName,
-      categoryDescription: req.body.categoryDescription,
-      categoryImage: categoryImage,
-      item: items.item,
-      _id: req.params.id,
-    });
-
-    if (req.file) {
-      if (
-        req.file.mimetype.toString() !== "image/jpg" &&
-        req.file.mimetype.toString() !== "image/jpeg" &&
-        req.file.mimetype.toString() !== "image/png"
-      ) {
-        //  console.log(req.file.mimetype);
-        return res.render("category_form", {
-          title: "Category Create",
-          category: category,
-          errors: [{ msg: "only images allowed" }],
-        });
-      }
-    }
 
     // console.log("update file", req.file);
     if (req.file != undefined) {
@@ -258,23 +263,15 @@ exports.category_update_post = [
         // console.log(err);
         return next(err);
       }
-    } else {
-      try {
-        data = await Category.findById(req.params.id, "categoryImage");
-        if (data == undefined || data == false) {
-          categoryImage = false;
-        } else {
-          categoryImage = {
-            data: data.categoryImage.data,
-            contentType: req.file.mimetype,
-          };
-        }
-      } catch (err) {
-        // console.log(err);
-        return next(err);
-      }
     }
 
+    const category = new Category({
+      categoryName: req.body.categoryName,
+      categoryDescription: req.body.categoryDescription,
+      categoryImage: categoryImage || "",
+      item: items.item,
+      _id: req.params.id,
+    });
     // console.log(items.item);
 
     //unlink(delete) the file from computer since it has been uploaded to database
@@ -284,41 +281,18 @@ exports.category_update_post = [
       // console.log("file is not deleted from computer", err);
     }
 
-    // console.log("category=", category);
-    if (!errors.isEmpty()) {
-      res.render("category_form", {
-        title: "Update Category",
-        category: category,
-        errors: errors.array(),
-      });
-      return;
-    } else {
-      // Category.findOne({
-      //   categoryName: category.categoryName,
-      // }).exec((err, result) => {
-      //   if (err) return next(err);
-      //   if (result) {
-      //     console.log("already exits");
-      //     // console.log("alreay=", result);
-      //     res.redirect(category.url);
-      //     return;
-      //   } else {
-      // console.log("hahahhahhahahahha");
-      Category.findByIdAndUpdate(
-        req.params.id,
-        category,
-        {},
-        (err, thecategory) => {
-          if (err) return next(err);
-          else {
-            res.redirect(thecategory.url);
-            return;
-          }
+    Category.findByIdAndUpdate(
+      req.params.id,
+      category,
+      {},
+      (err, thecategory) => {
+        if (err) return next(err);
+        else {
+          res.redirect(thecategory.url);
+          return;
         }
-      );
-    }
-    // });
-    // }
+      }
+    );
   },
 ];
 
