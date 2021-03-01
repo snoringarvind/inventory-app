@@ -12,16 +12,15 @@ block content
   span(style='display:inline-block')
     a(href=category.url + '/delete')
       button.btn.btn-primary(type='button') Delete Category
-  h3 #[strong Items:]
-  ol
-    for item in category.item
-      li
-        h4 
-          a(href=item.url) #[strong #{item.itemName}]
-            if item.itemImage.data!=undefined
-              p
+  hr
+  h3.detail-heading #[strong Items:]
+  div.list
+      ol
+        for item in category.item
+          li
+            a(href=item.url) #[h2 #{item.itemName}]
+              if item.itemImage.data!=undefined
                 img.category-detail-item-list(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64')) 
-      //- dd #{item.itemDescription}
-      hr 
-    else
-      p NO ITEMS YET!!
+          hr 
+        else
+          p NO ITEMS YET!!

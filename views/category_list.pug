@@ -1,12 +1,12 @@
 extends layout
-block content
-  h3.heading #[strong #{title}]
-  dl
+block content 
+  div.heading
+    h3 #[strong #{title}]
+  div.list-container
     for category in categories
-      h2
-        a(href=category.url) #[strong #{category.categoryName}]
+      div.list
+        a(href=category.url) #[h2 #{category.categoryName.toUpperCase()}]
           if category.categoryImage.data!=undefined
-            p
-              img.category-list(src='data:image/jpg;base64,' + category.categoryImage.data.toString('base64')) 
+            img.category-list(src='data:image/jpg;base64,' + category.categoryImage.data.toString('base64')) 
       //- dd #{category.categoryDescription}
       hr

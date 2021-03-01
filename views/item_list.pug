@@ -1,10 +1,11 @@
 extends layout
 block content
-  h3.heading #{title}
-  for item in items
-    p
-      a(href=item.url) #{item.itemName}     
-        if item.itemImage.data!=undefined
-          p
+  div.heading
+    h3 #[strong #{title}]
+  div.list-container
+    for item in items
+      div.list
+        a(href=item.url) #[h2 #{item.itemName.toUpperCase()}]     
+          if item.itemImage.data!=undefined
             img.item-list(src='data:image/jpg;base64,'+item.itemImage.data.toString('base64'))
     hr  

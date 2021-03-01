@@ -16,7 +16,7 @@ block content
       if category.categoryImage.data!=undefined
         img.category-form(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
     p.form-group
-      label(for='categoryImage') #[strong category Image:]
+      label(for='categoryImage') #[strong Category Image:]
       input#categoryImage.form-control(type='file' name='categoryImage')
     hr
     button.btn.btn-primary(type='submit') Submit
