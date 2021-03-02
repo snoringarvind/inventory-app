@@ -5,14 +5,14 @@ block content
     p.form-group
       label(for="category") #[strong Category:]
       select#category.form-control(name='category' type='select')
-        for category in categories
+        for category in categories 
           option(value=category._id selected=category.selected) #{category.categoryName}
     p.form-group 
       label(for="itemName") #[strong Item Name:]
       input#itemName.form-control(type="text" name='itemName' value=(item==undefined ? '' : item.itemName))
     if item!=undefined
       if item.itemImage.data!=undefined
-        img.item-form(src=('data:image/jpg;base64,'+item.itemImage.data.toString('base64')))
+        img.item-detail.item-form(src=('data:image/jpg;base64,'+item.itemImage.data.toString('base64')))
     p.form-group
       label(for="itemImage") #[strong Item Image:]
       input#itemImage.form-control(type='file' name='itemImage')

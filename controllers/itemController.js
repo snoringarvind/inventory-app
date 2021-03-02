@@ -3,7 +3,7 @@ const Category = require("../models/Category");
 const { body, validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs");
-const { Error } = require("mongoose");
+const url = require("url");
 
 exports.item_list = (req, res) => {
   Item.find({}).exec((err, result) => {
@@ -36,7 +36,23 @@ exports.item_create_get = (req, res, next) => {
         items: [],
       });
     } else {
-      res.render("item_form", { title: "Create Item", categories: result });
+      const q = url.parse(req.url, true);
+      // console.log(q.search.category);
+      const qData = q.query;
+
+      //this is to select the category if the user selectd to add item from update category
+      if (qData.category) {
+        for (let i = 0; i < result.length; i++) {
+          if (result[i].categoryName == qData.category) {
+            result[i].selected = true;
+          }
+        }
+      }
+
+      res.render("item_form", {
+        title: "Create Item",
+        categories: result,
+      });
       return;
     }
   });
@@ -65,6 +81,26 @@ exports.item_create_post = [
     // console.log("hahahah");
     const errors = validationResult(req);
 
+    let data;
+    let contentType;
+    let itemImage;
+    let categories;
+
+    try {
+      categories = await Category.find({}, "categoryName");
+    } catch (err) {
+      return next(err);
+    }
+
+    console.log("hellllooo");
+    console.log(categories);
+    for (let i = 0; i < categories.length; i++) {
+      if (categories[i]._id.toString() == req.body.category.toString()) {
+        categories[i].selected = true;
+        console.log(categories);
+      }
+    }
+
     if (req.file) {
       if (
         req.file.mimetype.toString() !== "image/jpg" &&
@@ -87,12 +123,6 @@ exports.item_create_post = [
       }
     }
     if (!errors.isEmpty()) {
-      for (let i = 0; i < categories.length; i++) {
-        if (categories[i]._id.toString() == req.body.category.toString()) {
-          // console.log("categories[i]=", categories[i]);
-          categories[i].selected = true;
-        }
-      }
       res.render("item_form", {
         title: "Create Item",
         item: {
@@ -107,11 +137,6 @@ exports.item_create_post = [
       });
       return;
     }
-
-    let data;
-    let contentType;
-    let itemImage;
-    let categories;
 
     //using if and else cause maybe if you don't wish to update the image
     if (req.file != undefined) {
@@ -138,13 +163,6 @@ exports.item_create_post = [
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
     } catch (err) {
       // console.log("file is not deleted from computer", err);
-    }
-
-    try {
-      categories = await Category.find({}, "categoryName");
-      // categories = [categories];
-    } catch (err) {
-      return next(err);
     }
 
     // console.log("req.body.category=", req.body.category);
@@ -248,6 +266,24 @@ exports.item_update_post = [
   async (req, res, next) => {
     const errors = validationResult(req);
 
+    let data;
+    let contentType;
+    let itemImage;
+    let categories;
+
+    try {
+      categories = await Category.find({}, "categoryName");
+    } catch (err) {
+      return next(err);
+    }
+
+    for (let i = 0; i < categories.length; i++) {
+      if (categories[i]._id.toString() == req.body.category.toString()) {
+        // console.log("categories[i]=", categories[i]);
+        categories[i].selected = true;
+      }
+    }
+
     if (req.file) {
       if (
         req.file.mimetype.toString() !== "image/jpg" &&
@@ -272,12 +308,6 @@ exports.item_update_post = [
     // console.log("req.body.category=", req.body.category);
     // console.log("categories", categories);
     if (!errors.isEmpty()) {
-      for (let i = 0; i < categories.length; i++) {
-        if (categories[i]._id.toString() == req.body.category.toString()) {
-          // console.log("categories[i]=", categories[i]);
-          categories[i].selected = true;
-        }
-      }
       res.render("item_form", {
         title: "Create Item",
         item: {
@@ -292,11 +322,6 @@ exports.item_update_post = [
       });
       return;
     }
-
-    let data;
-    let contentType;
-    let itemImage;
-    let categories;
 
     console.log(req.file, 301);
     //using if and else cause maybe if you don't wish to update the image
@@ -330,13 +355,6 @@ exports.item_update_post = [
       await fs.unlinkSync(path.join(__dirname, "../") + req.file.path);
     } catch (err) {
       // console.log("file is not deleted from computer", err);
-    }
-
-    try {
-      categories = await Category.find({}, "categoryName");
-      // categories = [categories];
-    } catch (err) {
-      return next(err);
     }
 
     //*commenting this out because maybe if you just want to update the image and the item name is not updated, it will return you back

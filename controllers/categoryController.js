@@ -57,7 +57,6 @@ exports.category_detail = async (req, res, next) => {
     .exec((err, result) => {
       if (err) return next(err);
       else {
-        // console.log(result);
         res.render("category_detail", {
           title: "category_detail",
           category: result,
@@ -127,7 +126,6 @@ exports.category_create_post = [
     let data;
     let contentType;
     let categoryImage;
-    console.log(req.body);
 
     // console.log("update file", req.file);
     if (req.file != undefined) {

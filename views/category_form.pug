@@ -1,10 +1,10 @@
 extends layout
 block content
   h3.heading #[strong #{title}]
-  if add_item!=false
-    p
-      a(href="/catalog/item/create")
-        button.btn.btn-primary Add Item 
+
+  p
+    a(href=`/catalog/item/create/?category=${category.categoryName}`)
+      button.btn.btn-primary Add Item
   form(action='' method='POST' enctype='multipart/form-data') 
     p.form-group
       label(for='categoryName') #[strong Category Name:]
@@ -14,7 +14,7 @@ block content
       textarea#categoryDescription.form-control(name='categoryDescription') #{category==undefined ? '' : category.categoryDescription}
     if category!=undefined
       if category.categoryImage.data!=undefined
-        img.category-form(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
+        img.item-detail.category-form(src='data:image/jpg;base64,'+category.categoryImage.data.toString('base64'))
     p.form-group
       label(for='categoryImage') #[strong Category Image:]
       input#categoryImage.form-control(type='file' name='categoryImage')
